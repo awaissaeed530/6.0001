@@ -169,6 +169,8 @@ class AfterTrigger(TimeTrigger):
 # COMPOSITE TRIGGERS
 
 # Problem 7
+
+
 class NotTrigger(Trigger):
     trigger: Trigger
 
@@ -179,6 +181,8 @@ class NotTrigger(Trigger):
         return not self.trigger.evaluate(story)
 
 # Problem 8
+
+
 class AndTrigger(Trigger):
     left_trigger: Trigger
     right_trigger: Trigger
@@ -191,6 +195,8 @@ class AndTrigger(Trigger):
         return self.left_trigger.evaluate(story) and self.right_trigger.evaluate(story)
 
 # Problem 9
+
+
 class OrTrigger(Trigger):
     left_trigger: Trigger
     right_trigger: Trigger
@@ -207,6 +213,8 @@ class OrTrigger(Trigger):
 # ======================
 
 # Problem 10
+
+
 def filter_stories(stories, triggerlist):
     """
     Takes in a list of NewsStory instances.
@@ -214,9 +222,11 @@ def filter_stories(stories, triggerlist):
     Returns: a list of only the stories for which a trigger in triggerlist fires.
     """
     # TODO: Problem 10
-    # This is a placeholder
-    # (we're just returning all the stories, with no filtering)
-    return stories
+    result = list()
+    for story in stories:
+        if all(trigger.evaluate(story) for trigger in triggerlist):
+            result.append(story)
+    return result
 
 
 # ======================
@@ -226,12 +236,8 @@ def filter_stories(stories, triggerlist):
 def read_trigger_config(filename):
     """
     filename: the name of a trigger configuration file
-
-    Returns: a list of trigger objects specified by the trigger configuration
-        file.
+    Returns: a list of trigger objects specified by the trigger configuration file.
     """
-    # We give you the code to read in the file and eliminate blank lines and
-    # comments. You don't need to know how it works for now!
     trigger_file = open(filename, 'r')
     lines = []
     for line in trigger_file:
@@ -239,11 +245,22 @@ def read_trigger_config(filename):
         if not (len(line) == 0 or line.startswith('//')):
             lines.append(line)
 
-    # TODO: Problem 11
-    # line is the list of lines that you need to parse and for which you need
-    # to build triggers
-
-    print(lines)  # for now, print it so you see what it contains!
+    triggers = list()
+    for line in lines:
+        args = line.split(',')
+        if (args[1].lower() == 'title'):
+            triggers.append(TitleTrigger(args[2]))
+        elif (args[1].lower() == 'description'):
+            triggers.append(DescriptionTrigger(args[2]))
+        elif (args[1].lower() == 'before'):
+            triggers.append(BeforeTrigger(args[2]))
+        elif (args[1].lower() == 'after'):
+            triggers.append(AfterTrigger(args[2]))
+        elif (args[1].lower() == 'and'):
+            triggers.append(AndTrigger(args[2], args[3]))
+        elif (args[1].lower() == 'or'):
+            triggers.append(OrTrigger(args[2], args[3]))
+    return triggers
 
 
 SLEEPTIME = 120  # seconds -- how often we poll
@@ -253,15 +270,8 @@ def main_thread(master):
     # A sample trigger list - you might need to change the phrases to correspond
     # to what is currently in the news
     try:
-        t1 = TitleTrigger("election")
-        t2 = DescriptionTrigger("Trump")
-        t3 = DescriptionTrigger("Clinton")
-        t4 = AndTrigger(t2, t3)
-        triggerlist = [t1, t4]
-
         # Problem 11
-        # TODO: After implementing read_trigger_config, uncomment this line
-        # triggerlist = read_trigger_config('triggers.txt')
+        triggerlist = read_trigger_config('triggers.txt')
 
         # HELPER CODE - you don't need to understand this!
         # Draws the popup window that displays the filtered stories
